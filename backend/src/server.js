@@ -2,20 +2,20 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import dotenv from "dotenv";
+import connectDB from "./models/Connections/dbConnection.js";
+import appRouter from "./routes/appRouter.js";
 
 dotenv.config();
 
 const app = express();
 
-// Middleware
+connectDB();
+
 app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
-
-// Basic route for testing
-app.get("/", (req, res) => {
-  res.json({ message: "Welcome to EventBooker API" });
-});
+app.use("/api", appRouter);
+// Middleware
 
 // Error handling middleware
 app.use((err, req, res, next) => {
