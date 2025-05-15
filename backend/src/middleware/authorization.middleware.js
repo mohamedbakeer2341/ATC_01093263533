@@ -5,13 +5,13 @@ const authorize = (role) => {
     const user = req.user;
 
     if (!user) {
-      return res.status(401).json({ message: "Unauthorized: No user found" });
+      return next(new Error("Unauthorized: No user found", { status: 401 }));
     }
 
     if (user.role !== role) {
-      return res
-        .status(403)
-        .json({ message: "Forbidden: Insufficient permissions" });
+      return next(
+        new Error("Forbidden: Insufficient permissions", { status: 403 })
+      );
     }
 
     next();

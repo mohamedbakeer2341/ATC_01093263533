@@ -2,21 +2,17 @@ import { verifyToken } from "../utils/jwt.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
 const authenticate = asyncHandler(async (req, res, next) => {
-  try {
-    const authHeader = req.headers.authorization;
+  const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      throw new Error("No token provided");
-    }
-
-    const token = authHeader.split(" ")[1];
-    const decoded = verifyToken(token);
-
-    req.user = decoded;
-    next();
-  } catch (error) {
-    next({ status: 401, message: error.message });
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    next(new Error("No token provided", { status: 401 }));
   }
+
+  const token = authHeader.split(" ")[1];
+  const decoded = verifyToken(token);
+
+  req.user = decoded;
+  next();
 });
 
 export default authenticate;

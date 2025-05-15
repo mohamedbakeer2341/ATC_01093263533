@@ -10,7 +10,11 @@ import authenticate from "../middleware/authentication.middleware.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import authorize from "../middleware/authorization.middleware.js";
 import { uploadEvent } from "../utils/multer.js";
-
+import validate from "../middleware/validation.middleware.js";
+import {
+  eventCreateValidation,
+  eventUpdateValidation,
+} from "../validations/event.validation.js";
 const router = express.Router();
 
 // Public routes
@@ -23,6 +27,7 @@ router.post(
   authenticate,
   authorize("admin"),
   uploadEvent.single("image"),
+  validate(eventCreateValidation),
   asyncHandler(createEvent)
 );
 router.patch(
@@ -30,6 +35,7 @@ router.patch(
   authenticate,
   authorize("admin"),
   uploadEvent.single("image"),
+  validate(eventUpdateValidation),
   asyncHandler(updateEvent)
 );
 
