@@ -1,11 +1,10 @@
 import express from "express";
 import authRoutes from "./auth.routes.js";
-// Import other route files here (e.g., eventRoutes, userRoutes)
+import eventRoutes from "./event.routes.js";
 
 const router = express.Router();
 
-// Combine all routes
 router.use("/auth", authRoutes); // Routes will be: /api/auth/signup, /api/auth/login, etc.
-// router.use("/events", eventRoutes);  // Example for future expansion
+router.use("/event", eventRoutes);
 
 export default router;

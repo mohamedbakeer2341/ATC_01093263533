@@ -2,7 +2,8 @@ import multer from "multer";
 import cloudinary from "../utils/cloudinary.js";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 
-const storage = new CloudinaryStorage({
+// Configuration for profile pictures
+const profileStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "profile-pictures",
@@ -11,6 +12,17 @@ const storage = new CloudinaryStorage({
   },
 });
 
-const upload = multer({ storage });
+// Configuration for event images
+const eventStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "events",
+    allowed_formats: ["jpg", "jpeg", "png"],
+    transformation: [
+      { width: 300, height: 200, crop: "fill", gravity: "auto" },
+    ],
+  },
+});
 
-export default upload;
+export const uploadProfile = multer({ storage: profileStorage });
+export const uploadEvent = multer({ storage: eventStorage });
