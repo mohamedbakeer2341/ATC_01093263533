@@ -1,6 +1,7 @@
 import { verifyToken } from "../utils/jwt.js";
+import asyncHandler from "../utils/asyncHandler.js";
 
-export const authenticate = async (req, res, next) => {
+const authenticate = asyncHandler(async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -16,4 +17,6 @@ export const authenticate = async (req, res, next) => {
   } catch (error) {
     next({ status: 401, message: error.message });
   }
-};
+});
+
+export default authenticate;

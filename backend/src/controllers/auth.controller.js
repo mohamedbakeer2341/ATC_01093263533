@@ -92,17 +92,15 @@ export const uploadProfilePicture = async (req, res, next) => {
     error.status = 400;
     return next(error);
   }
-
+  console.log(user.profilePicture);
   if (user.profilePicture) {
-    const publicId = user.profilePicture.split("/").pop().split(".")[0];
-    await cloudinary.uploader.destroy(`profile-pictures/${publicId}`);
+    const urlParts = user.profilePicture.split("/upload/")[1].split("/");
+    const oldPublicId = urlParts.slice(1).join("/").split(".")[0];
+
+    await cloudinary.uploader.destroy(oldPublicId);
   }
 
-  const result = await cloudinary.uploader.upload(req.file.path, {
-    folder: "profile-pictures",
-  });
-
-  user.profilePicture = result.secure_url;
+  user.profilePicture = req.file.path;
   await user.save();
 
   res.status(200).json({
