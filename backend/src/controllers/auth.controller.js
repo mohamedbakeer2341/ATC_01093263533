@@ -3,6 +3,7 @@ import { generateToken } from "../utils/jwt.js";
 import { hashPassword, comparePassword } from "../utils/password.js";
 import { generateToken as generateCryptoToken } from "../utils/crypto.js";
 import { sendVerificationEmail } from "../utils/email.js";
+import cloudinary from "../utils/cloudinary.js";
 
 export const signup = async (req, res, next) => {
   const { email, password, name } = req.body;
@@ -73,5 +74,76 @@ export const login = async (req, res, next) => {
   }
 
   const token = generateToken({ userId: user._id, email: user.email });
-  res.status(200).json({ message: "Login successful", user, token });
+  res.status(200).json({ message: "Login successful", token });
+};
+
+export const uploadProfilePicture = async (req, res, next) => {
+  const { userId } = req.user;
+  const user = await User.findById(userId);
+
+  if (!user) {
+    const error = new Error("User not found");
+    error.status = 404;
+    return next(error);
+  }
+
+  if (!req.file) {
+    const error = new Error("No file uploaded");
+    error.status = 400;
+    return next(error);
+  }
+
+  if (user.profilePicture) {
+    const publicId = user.profilePicture.split("/").pop().split(".")[0];
+    await cloudinary.uploader.destroy(`profile-pictures/${publicId}`);
+  }
+
+  const result = await cloudinary.uploader.upload(req.file.path, {
+    folder: "profile-pictures",
+  });
+
+  user.profilePicture = result.secure_url;
+  await user.save();
+
+  res.status(200).json({
+    message: "Profile picture uploaded successfully",
+    profilePicture: user.profilePicture,
+  });
+};
+
+export const changePassword = async (req, res, next) => {
+  const { userId } = req.user;
+  const { currentPassword, newPassword } = req.body;
+
+  const user = await User.findById(userId);
+  if (!user) throw new Error("User not found");
+
+  const isMatch = await comparePassword(currentPassword, user.password);
+  if (!isMatch) throw new Error("Current password is incorrect");
+
+  user.password = await hashPassword(newPassword);
+  await user.save();
+
+  res.status(200).json({ message: "Password updated successfully" });
+};
+
+export const getUserProfile = async (req, res, next) => {
+  const { userId } = req.user;
+
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  res.status(200).json({
+    message: "Profile retrieved successfully",
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isVerified: user.isVerified,
+      profilePicture: user.profilePicture,
+    },
+  });
 };
