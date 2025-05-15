@@ -4,8 +4,6 @@ import Booking from "../models/booking.model.js";
 
 export const createEvent = asyncHandler(async (req, res, next) => {
   const { name, date, venue } = req.body;
-  let imageUrl = req.file?.path;
-
   const currentDate = new Date();
   const eventDate = new Date(date);
 
@@ -33,14 +31,18 @@ export const createEvent = asyncHandler(async (req, res, next) => {
   };
 
   const event = await Event.create(eventData);
-  res.status(201).json(event);
+  res.status(201).json({
+    success: true,
+    message: "Event created successfully",
+    data: event,
+  });
 });
 
 export const getAllEvents = asyncHandler(async (req, res, next) => {
   const events = await Event.find({
     date: { $gte: new Date() },
   }).lean();
-  const userBookings = await Booking.find({ userId: req.user._id }).lean();
+  const userBookings = await Booking.find({ userId: req.user.userId }).lean();
   const bookedEventIds = userBookings.map((b) => b.eventId.toString());
 
   const result = events.map((event) => ({
@@ -48,12 +50,9 @@ export const getAllEvents = asyncHandler(async (req, res, next) => {
     userHasBooked: bookedEventIds.includes(event._id.toString()),
   }));
 
-  if (!result.length) {
-    const error = new Error("No events found");
-    error.status = 404;
-    return next(error);
-  }
-  return res.json(result);
+  return res
+    .status(200)
+    .json({ success: true, count: events.length, data: result });
 });
 
 export const getEventById = asyncHandler(async (req, res, next) => {
@@ -77,7 +76,7 @@ export const getEventById = asyncHandler(async (req, res, next) => {
     userHasBooked: hasBooked,
   };
 
-  res.status(200).json(result);
+  res.status(200).json({ success: true, data: result });
 });
 
 export const updateEvent = asyncHandler(async (req, res, next) => {
@@ -119,7 +118,7 @@ export const updateEvent = asyncHandler(async (req, res, next) => {
     return next(error);
   }
 
-  return res.status(201).json(event);
+  return res.status(200).json({ success: true, data: { event } });
 });
 
 export const deleteEvent = asyncHandler(async (req, res, next) => {
@@ -129,5 +128,9 @@ export const deleteEvent = asyncHandler(async (req, res, next) => {
     error.status = 404;
     return next(error);
   }
-  res.status(200).json({ message: "Event deleted successfully" });
+  res.status(200).json({
+    success: true,
+    message: "Event deleted successfully",
+    data: event,
+  });
 });

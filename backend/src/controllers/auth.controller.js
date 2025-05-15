@@ -22,9 +22,13 @@ export const createAdmin = async (req, res, next) => {
   });
 
   return res.status(201).json({
-    _id: admin._id,
-    email: admin.email,
-    role: admin.role,
+    success: true,
+    data: {
+      _id: admin._id,
+      email: admin.email,
+      role: admin.role,
+    },
+    message: "Admin created successfully",
   });
 };
 
@@ -52,7 +56,10 @@ export const signup = async (req, res, next) => {
   await user.save();
   await sendVerificationEmail(email, verificationToken);
 
-  res.status(201).json({ message: "Please check your email for verification" });
+  res.status(201).json({
+    success: true,
+    message: "Please check your email for verification",
+  });
 };
 
 export const verifyEmail = async (req, res, next) => {
@@ -76,7 +83,9 @@ export const verifyEmail = async (req, res, next) => {
   user.verificationTokenExpires = undefined;
   await user.save();
 
-  res.status(200).json({ message: "Email verified successfully" });
+  res
+    .status(200)
+    .json({ success: true, message: "Email verified successfully" });
 };
 
 export const login = async (req, res, next) => {
@@ -101,7 +110,7 @@ export const login = async (req, res, next) => {
     email: user.email,
     role: user.role,
   });
-  res.status(200).json({ message: "Login successful", token });
+  res.status(200).json({ success: true, message: "Login successful", token });
 };
 
 export const uploadProfilePicture = async (req, res, next) => {
@@ -132,7 +141,7 @@ export const uploadProfilePicture = async (req, res, next) => {
 
   res.status(200).json({
     message: "Profile picture uploaded successfully",
-    profilePicture: user.profilePicture,
+    data: { profilePicture: user.profilePicture },
   });
 };
 
@@ -149,7 +158,9 @@ export const changePassword = async (req, res, next) => {
   user.password = await hashPassword(newPassword);
   await user.save();
 
-  res.status(200).json({ message: "Password updated successfully" });
+  res
+    .status(200)
+    .json({ success: true, message: "Password updated successfully" });
 };
 
 export const getUserProfile = async (req, res, next) => {
@@ -162,8 +173,9 @@ export const getUserProfile = async (req, res, next) => {
   }
 
   res.status(200).json({
+    success: true,
     message: "Profile retrieved successfully",
-    user: {
+    data: {
       _id: user._id,
       name: user.name,
       email: user.email,
