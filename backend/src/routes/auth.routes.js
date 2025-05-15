@@ -6,10 +6,12 @@ import {
   uploadProfilePicture,
   changePassword,
   getUserProfile,
+  createAdmin,
 } from "../controllers/auth.controller.js";
 import asyncHandler from "../utils/asyncHandler.js";
-import upload from "../utils/multer.js";
+import { uploadProfile } from "../utils/multer.js";
 import authenticate from "../middleware/authentication.middleware.js";
+import authorize from "../middleware/authorization.middleware.js";
 
 const router = express.Router();
 
@@ -17,10 +19,11 @@ const router = express.Router();
 router.post("/signup", asyncHandler(signup));
 router.post("/login", asyncHandler(login));
 router.get("/verify-email", asyncHandler(verifyEmail));
+router.post("/create-admin", authenticate, authorize("admin"), createAdmin);
 router.patch(
   "/upload-profile-picture",
   authenticate,
-  upload.single("profilePicture"),
+  uploadProfile.single("profilePicture"),
   uploadProfilePicture
 );
 router.patch("/change-password", authenticate, changePassword);

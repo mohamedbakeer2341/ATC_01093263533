@@ -1,6 +1,6 @@
 import asyncHandler from "../utils/asyncHandler.js";
 
-export const authorize = (role) => {
+const authorize = (role) => {
   return asyncHandler(async (req, res, next) => {
     const user = req.user;
 
@@ -17,3 +17,5 @@ export const authorize = (role) => {
     next();
   });
 };
+
+export default authorize;

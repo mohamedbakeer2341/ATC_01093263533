@@ -5,6 +5,29 @@ import { generateToken as generateCryptoToken } from "../utils/crypto.js";
 import { sendVerificationEmail } from "../utils/email.js";
 import cloudinary from "../utils/cloudinary.js";
 
+export const createAdmin = async (req, res, next) => {
+  const { email, password, name } = req.body;
+  const existingUser = await User.findOne({ email });
+
+  if (existingUser) {
+    return res.status(400).json({ message: "Email already exists" });
+  }
+
+  const admin = await User.create({
+    email,
+    password: await hashPassword(password),
+    name,
+    role: "admin",
+    isVerified: true,
+  });
+
+  return res.status(201).json({
+    _id: admin._id,
+    email: admin.email,
+    role: admin.role,
+  });
+};
+
 export const signup = async (req, res, next) => {
   const { email, password, name } = req.body;
   const existingUser = await User.findOne({ email });
@@ -73,7 +96,11 @@ export const login = async (req, res, next) => {
     return next(error);
   }
 
-  const token = generateToken({ userId: user._id, email: user.email });
+  const token = generateToken({
+    userId: user._id,
+    email: user.email,
+    role: user.role,
+  });
   res.status(200).json({ message: "Login successful", token });
 };
 
@@ -128,7 +155,7 @@ export const changePassword = async (req, res, next) => {
 export const getUserProfile = async (req, res, next) => {
   const { userId } = req.user;
 
-  const user = await User.findById(userId);
+  const user = await User.findById(userId).lean();
 
   if (!user) {
     throw new Error("User not found");
