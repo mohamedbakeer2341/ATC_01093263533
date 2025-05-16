@@ -1,6 +1,7 @@
 import Booking from "../models/booking.model.js";
 import Event from "../models/event.model.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import paginate from "../utils/pagination.js";
 
 export const createBooking = asyncHandler(async (req, res, next) => {
   const { eventId } = req.params;
@@ -66,17 +67,24 @@ export const getBookingById = asyncHandler(async (req, res, next) => {
 
 export const getUserBookings = asyncHandler(async (req, res, next) => {
   const { userId } = req.user;
-
-  const bookings = await Booking.find({ userId })
-    .populate({
-      path: "eventId",
-      select: "name date venue price image",
-      options: { lean: true },
-    })
-    .sort({ bookedAt: -1 });
+  const { page = 1, limit = 10 } = req.query;
+  const { data: bookings, pagination } = await paginate(
+    Booking,
+    { userId },
+    {
+      page,
+      limit,
+      populate: {
+        path: "eventId",
+        select: "name date venue price image",
+        options: { lean: true },
+      },
+      sort: { bookedAt: -1 },
+    }
+  );
 
   const result = bookings
-    .filter((booking) => booking.eventId) // Remove bookings with null eventId
+    .filter((booking) => booking.eventId)
     .map((booking) => ({
       id: booking._id,
       status: booking.status,

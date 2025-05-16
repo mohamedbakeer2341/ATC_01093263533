@@ -1,6 +1,7 @@
 import Event from "../models/event.model.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import Booking from "../models/booking.model.js";
+import paginate from "../utils/pagination.js";
 
 export const createEvent = asyncHandler(async (req, res, next) => {
   const { name, date, venue } = req.body;
@@ -39,20 +40,47 @@ export const createEvent = asyncHandler(async (req, res, next) => {
 });
 
 export const getAllEvents = asyncHandler(async (req, res, next) => {
-  const events = await Event.find({
-    date: { $gte: new Date() },
-  }).lean();
-  const userBookings = await Booking.find({ userId: req.user.userId }).lean();
-  const bookedEventIds = userBookings.map((b) => b.eventId.toString());
+  const { page = 1, limit = 10, sort = "-date", category, search } = req.query;
 
+  // Base query - only future events
+  const query = { date: { $gte: new Date() } };
+
+  // Add filters
+  if (category) query.category = category;
+  if (search) {
+    query.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { description: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  // Get paginated events
+  const { data: events, pagination } = await paginate(Event, query, {
+    page,
+    limit,
+    sort,
+  });
+
+  // Get user's bookings if authenticated
+  let bookedEventIds = [];
+  if (req.user?.userId) {
+    const userBookings = await Booking.find({
+      userId: req.user.userId,
+    }).lean();
+    bookedEventIds = userBookings.map((b) => b.eventId.toString());
+  }
+
+  // Transform response
   const result = events.map((event) => ({
     ...event,
     userHasBooked: bookedEventIds.includes(event._id.toString()),
   }));
 
-  return res
-    .status(200)
-    .json({ success: true, count: events.length, data: result });
+  res.status(200).json({
+    success: true,
+    data: result,
+    pagination,
+  });
 });
 
 export const getEventById = asyncHandler(async (req, res, next) => {

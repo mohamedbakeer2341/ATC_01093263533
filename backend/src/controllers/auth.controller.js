@@ -165,6 +165,12 @@ export const changePassword = async (req, res, next) => {
 
 export const getUserProfile = async (req, res, next) => {
   const { userId } = req.user;
+  const cacheKey = `user_profile_${userId}`;
+
+  const cachedProfile = await redisClient.get(cacheKey);
+  if (cachedProfile) {
+    return res.json({ success: true, data: JSON.parse(cachedProfile) });
+  }
 
   const user = await User.findById(userId).lean();
 
@@ -172,15 +178,13 @@ export const getUserProfile = async (req, res, next) => {
     throw new Error("User not found");
   }
 
-  res.status(200).json({
-    success: true,
-    message: "Profile retrieved successfully",
-    data: {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      isVerified: user.isVerified,
-      profilePicture: user.profilePicture,
-    },
-  });
+  const profileData = {
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    isVerified: user.isVerified,
+    profilePicture: user.profilePicture,
+  };
+  await redisClient.setEx(cacheKey, 1800, JSON.stringify(profileData));
+  return res.json({ success: true, data: profileData });
 };
