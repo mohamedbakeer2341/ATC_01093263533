@@ -5,7 +5,9 @@ const authenticate = asyncHandler(async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return next(new Error("No token provided", { status: 401 }));
+    const error = new Error("No token provided");
+    error.status = 401;
+    return next(error);
   }
 
   const token = authHeader.split(" ")[1];
