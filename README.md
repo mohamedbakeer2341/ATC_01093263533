@@ -56,7 +56,7 @@ _(Please specify versions where appropriate)_
 ### 5.1. Clone the Repository
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/mohamedbakeer2341/ATC_01093263533>
 cd EventBooker
 ```
 
