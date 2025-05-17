@@ -51,6 +51,8 @@ _(Please specify versions where appropriate)_
 
 ## 5. Getting Started
 
+**IMPORTANT NOTE ON ENVIRONMENT VARIABLES:** This application relies on environment variables for crucial settings like API keys, database connections, and service URLs. You will need to create environment configuration files (commonly `.env` or `.env.local`) in both the `backend` and `frontend/event-app` directories. Detailed instructions are provided in sections 5.2 (Backend Setup) and 5.3 (Frontend Setup). **Failure to configure these correctly will prevent the application from starting or functioning properly.**
+
 ### 5.1. Clone the Repository
 
 ```bash
@@ -133,29 +135,80 @@ cd EventBooker
     ```
     The frontend application should typically open in your browser at `http://localhost:3000`.
 
-### 6.3. Running with Docker Compose (Optional)
+### 6.3. API Documentation
 
-If you have Docker and Docker Compose set up:
+- **Base API URL (Deployed):** `https://eventbooker-024e32ba58a3.herokuapp.com/api`
+- **Base API URL (Local via `npm run dev` or Docker):** `http://localhost:5000/api`
+- **Swagger/OpenAPI Documentation (Deployed):** `https://eventbooker-024e32ba58a3.herokuapp.com/api-docs`
+- **Swagger/OpenAPI Documentation (Local via `npm run dev` or Docker):** `http://localhost:5000/api-docs`
 
-1.  Ensure your `docker-compose.yml` is configured correctly for both frontend and backend services, including environment variables.
-2.  From the project root directory (`EventBooker`):
+### 6.4. Frontend URL
+
+- **Local Development (via `npm start` or Docker):** `http://localhost:3000` (typically)
+- **Deployed Application:** `https://event-booker-frontend.vercel.app/`
+  _(Note: The deployed frontend application is configured to connect to the deployed backend API: `https://eventbooker-024e32ba58a3.herokuapp.com/api`)_
+
+### 6.5. Running with Docker Compose
+
+These instructions assume you have Docker and Docker Compose installed on your system. This Docker Compose setup is designed for local development, creating a self-contained environment where the frontend (typically on `http://localhost:3000`) communicates with the backend (typically on `http://localhost:5000/api`) running in separate containers on your local machine.
+
+1.  **Prerequisites:**
+
+    - Ensure Docker Desktop (or Docker Engine with Docker Compose plugin) is installed and running.
+    - Make sure no other services are using the ports defined in your `docker-compose.yml` (commonly 3000 for frontend, 5000 for backend).
+
+2.  **Environment Variables:**
+
+    - **Backend:** The backend service in `docker-compose.yml` should be configured to use an `.env` file (e.g., `backend/.env`). Ensure this file exists and contains all necessary backend environment variables as described in section `5.2. Backend Setup`.
+    - **Frontend:** If your frontend requires environment variables (like `REACT_APP_API_URL`), these should ideally be built into the Docker image or supplied via the `docker-compose.yml`. For `REACT_APP_` variables used by Create React App, they are typically baked in at build time.
+      - If you're using Vite and `VITE_` prefixed variables, ensure your `frontend/event-app/Dockerfile` and `docker-compose.yml` are set up to pass these build arguments or environment variables correctly.
+      - The frontend is generally configured to connect to the backend at `http://localhost:5000/api` (or whatever the backend service is exposed as from the Docker network, often the same as local non-Docker development).
+
+3.  **Build and Start the Services:**
+    Navigate to the project root directory (where `docker-compose.yml` is located) and run:
+
     ```bash
     docker-compose up --build
     ```
-    This will build the images (if not already built) and start both frontend and backend containers. Access URLs will be as defined in your Docker Compose setup (often `http://localhost:3000` for frontend and `http://localhost:5000` for backend, but check your `ports` mapping).
 
-## 7. API Documentation
+    - `--build`: This flag tells Docker Compose to build the images before starting the containers. It's good practice to include this if you've made changes to the `Dockerfile` or application code that affects the image.
+    - This command will start all services defined in your `docker-compose.yml` (typically frontend and backend). You'll see logs from all services in your terminal.
 
-- **Base API URL:** `[TODO: Add Backend Base API URL, e.g., http://localhost:5000/api or https://your-deployed-backend-url.com/api]`
-- **Swagger/OpenAPI Documentation:** The backend API documentation is generated using Swagger (or OpenAPI). Once the backend server is running, you can typically access it at:
-  `[TODO: Add link to Swagger UI, e.g., http://localhost:5000/api-docs]`
+4.  **Accessing the Application:**
 
-## 8. Frontend URL
+    - **Frontend:** Open your browser and go to `http://localhost:3000` (or the port you've mapped for the frontend service in `docker-compose.yml`).
+    - **Backend API:** The backend will be accessible at `http://localhost:5000/api` (or the port you've mapped for the backend service). API documentation (Swagger) should be available at `http://localhost:5000/api-docs`.
 
-- **Local Development:** `http://localhost:3000` (typically)
-- **Deployed Application:** `[TODO: Add Deployed Frontend URL if applicable]`
+5.  **Running in Detached Mode:**
+    To run the containers in the background (detached mode), use:
 
-## 9. Folder Structure
+    ```bash
+    docker-compose up --build -d
+    ```
+
+    You can view logs using `docker-compose logs -f` or `docker-compose logs <service_name>`.
+
+6.  **Stopping the Application:**
+    To stop and remove the containers, networks, and volumes created by `up`, navigate to the project root and run:
+
+    ```bash
+    docker-compose down
+    ```
+
+    If you want to remove volumes (like database data if persisted in a volume), you can add the `-v` flag:
+
+    ```bash
+    docker-compose down -v
+    ```
+
+7.  **Rebuilding Images:**
+    If you only want to rebuild images without necessarily restarting services immediately, you can use:
+    ```bash
+    docker-compose build
+    ```
+    Then start with `docker-compose up`.
+
+## 7. Folder Structure
 
 ```
 EventBooker/
@@ -198,7 +251,7 @@ EventBooker/
 
 _(This is a general structure, please adjust to match your project's actual layout.)_
 
-## 10. Contributing
+## 8. Contributing
 
 _(Placeholder - please define your contribution guidelines)_
 We welcome contributions! Please follow these steps:
@@ -212,7 +265,7 @@ We welcome contributions! Please follow these steps:
 
 Please ensure your code adheres to the project's coding standards and includes tests where applicable.
 
-## 11. License
+## 9. License
 
 _(Placeholder - Choose a license, e.g., MIT)_
 This project is licensed under the **[TODO: Specify License, e.g., MIT License]**. See the `LICENSE` file for details (if you add one).
