@@ -9,20 +9,28 @@ export const createBooking = asyncHandler(async (req, res, next) => {
 
   const event = await Event.findById(eventId);
   if (!event) {
-    return next(new Error("Event not found", { status: 404 }));
+    const error = new Error("Event not found");
+    error.status = 404;
+    return next(error);
   }
   if (event.date < new Date()) {
-    return next(new Error("Cannot book past events", { status: 400 }));
+    const error = new Error("Cannot book past events");
+    error.status = 400;
+    return next(error);
   }
 
   const bookingsCount = await Booking.countDocuments({ eventId });
   if (bookingsCount >= event.capacity) {
-    return next(new Error("Event is sold out", { status: 400 }));
+    const error = new Error("Event is sold out");
+    error.status = 400;
+    return next(error);
   }
 
   const existingBooking = await Booking.findOne({ eventId, userId });
   if (existingBooking) {
-    return next(new Error("You already booked this event", { status: 409 }));
+    const error = new Error("You already booked this event");
+    error.status = 409;
+    return next(error);
   }
 
   const booking = await Booking.create({ eventId, userId });
@@ -44,9 +52,9 @@ export const getBookingById = asyncHandler(async (req, res, next) => {
   }).populate("eventId", "name description date venue price image");
 
   if (!booking) {
-    return next(
-      new Error("Booking not found or unauthorized", { status: 404 })
-    );
+    const error = new Error("Booking not found or unauthorized");
+    error.status = 404;
+    return next(error);
   }
 
   const flattenedResponse = {

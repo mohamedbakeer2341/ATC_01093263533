@@ -11,7 +11,9 @@ export const createAdmin = async (req, res, next) => {
   const existingUser = await User.findOne({ email });
 
   if (existingUser) {
-    return res.status(400).json({ message: "Email already exists" });
+    const error = new Error("Email already exists");
+    error.status = 400;
+    return next(error);
   }
 
   const admin = await User.create({
@@ -168,10 +170,18 @@ export const changePassword = async (req, res, next) => {
   const { currentPassword, newPassword } = req.body;
 
   const user = await User.findById(userId);
-  if (!user) throw new Error("User not found");
+  if (!user) {
+    const error = new Error("User not found");
+    error.status = 404;
+    return next(error);
+  }
 
   const isMatch = await comparePassword(currentPassword, user.password);
-  if (!isMatch) throw new Error("Current password is incorrect");
+  if (!isMatch) {
+    const error = new Error("Current password is incorrect");
+    error.status = 401;
+    return next(error);
+  }
 
   user.password = await hashPassword(newPassword);
   await user.save();
@@ -193,7 +203,9 @@ export const getUserProfile = async (req, res, next) => {
   const user = await User.findById(userId).lean();
 
   if (!user) {
-    throw new Error("User not found");
+    const error = new Error("User not found");
+    error.status = 404;
+    return next(error);
   }
 
   const profileData = {
