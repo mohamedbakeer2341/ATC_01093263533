@@ -135,7 +135,7 @@ export const updateEvent = asyncHandler(async (req, res, next) => {
     req.params.id,
     {
       ...req.body,
-      date: new Date(currentDate),
+      date: new Date(eventDate),
       ...(req.file && { image: req.file.path }),
     },
     { new: true }

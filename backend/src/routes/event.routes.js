@@ -266,7 +266,7 @@ router.patch(
  *         required: true
  *         description: Event ID
  *     responses:
- *       204:
+ *       200:
  *         description: Event deleted successfully
  *       401:
  *         description: Unauthorized (missing/invalid token)
