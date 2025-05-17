@@ -9,11 +9,13 @@ import {
   Alert,
   Button,
   Upload,
+  Modal,
   theme as antdTheme,
-  message as staticMessage,
+  message,
 } from "antd";
 import { UserOutlined, UploadOutlined, EditOutlined } from "@ant-design/icons";
-import { updateProfilePicture } from "../features/auth/authSlice";
+import { updateProfilePicture, clearError } from "../features/auth/authSlice";
+import ChangePasswordModal from "../components/ChangePasswordModal";
 
 const { Title, Text } = Typography;
 const { useToken } = antdTheme;
@@ -26,21 +28,24 @@ const UserProfile = () => {
     error: authError,
   } = useSelector((state) => state.auth);
   const { token } = useToken();
-  const [messageApi, contextHolder] = staticMessage.useMessage();
+  const [messageApi, contextHolder] = message.useMessage();
   const [uploading, setUploading] = useState(false);
+  const [isChangePasswordModalVisible, setIsChangePasswordModalVisible] =
+    useState(false);
 
-  const handleChangePassword = () => {
-    console.log("Change Password clicked");
-    messageApi.info("Change password functionality to be implemented.");
+  const handleOpenChangePasswordModal = () => {
+    dispatch(clearError());
+    setIsChangePasswordModalVisible(true);
+  };
+
+  const handleCancelChangePasswordModal = () => {
+    setIsChangePasswordModalVisible(false);
+    dispatch(clearError());
   };
 
   const handleUploadProfilePicture = async (info) => {
     const file = info.file;
-    if (!file) {
-      return;
-    }
-
-    console.log("Selected file MIME type:", file.type);
+    if (!file) return;
 
     const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
     if (!isJpgOrPng) {
@@ -59,23 +64,15 @@ const UserProfile = () => {
       if (updateProfilePicture.fulfilled.match(resultAction)) {
         messageApi.success("Profile picture updated successfully!");
       } else {
-        let errorMessage =
-          "Could not update profile picture. Please try again.";
-        if (resultAction.payload && resultAction.payload.message) {
-          errorMessage = resultAction.payload.message;
-        } else if (
-          resultAction.payload &&
+        const errorMessage =
+          resultAction.payload?.message ||
           typeof resultAction.payload === "string"
-        ) {
-          errorMessage = resultAction.payload;
-        } else if (resultAction.error && resultAction.error.message) {
-          errorMessage = `Update failed: ${resultAction.error.message}`;
-        }
+            ? resultAction.payload
+            : "Could not update profile picture. Please try again.";
         messageApi.error(errorMessage);
       }
     } catch (err) {
       messageApi.error("An unexpected error occurred during upload.");
-      console.error("Unexpected upload error:", err);
     } finally {
       setUploading(false);
     }
@@ -101,9 +98,7 @@ const UserProfile = () => {
       <Alert
         message="Error"
         description={
-          typeof authError === "string"
-            ? authError
-            : authError?.message || "Could not load user profile."
+          typeof authError === "string" ? authError : authError?.message
         }
         type="error"
         showIcon
@@ -173,11 +168,19 @@ const UserProfile = () => {
           </Descriptions.Item>
         </Descriptions>
         <div style={{ marginTop: "20px", textAlign: "right" }}>
-          <Button icon={<EditOutlined />} onClick={handleChangePassword}>
+          <Button
+            icon={<EditOutlined />}
+            onClick={handleOpenChangePasswordModal}
+          >
             Change Password
           </Button>
         </div>
       </Card>
+      <ChangePasswordModal
+        open={isChangePasswordModalVisible}
+        onCancel={handleCancelChangePasswordModal}
+        messageApi={messageApi}
+      />
     </div>
   );
 };

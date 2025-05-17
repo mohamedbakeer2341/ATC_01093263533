@@ -222,6 +222,49 @@ export const updateProfilePicture = createAsyncThunk(
   }
 );
 
+// Change password
+export const changePassword = createAsyncThunk(
+  "auth/changePassword",
+  async (passwordData, { rejectWithValue }) => {
+    try {
+      const response = await api.patch("/auth/change-password", passwordData);
+      return response.data;
+    } catch (error) {
+      let specificErrorMessage = "Password change failed. Please try again."; // Default error
+
+      if (error.response && error.response.data) {
+        // Case 1: Backend sends { message: "Specific error..." }
+        if (typeof error.response.data.message === "string") {
+          specificErrorMessage = error.response.data.message;
+          // Case 2: Backend sends a plain string error directly in the data
+        } else if (typeof error.response.data === "string") {
+          specificErrorMessage = error.response.data;
+          // Case 3: Backend sends an object, but not with a 'message' field, stringify it if possible
+        } else if (typeof error.response.data === "object") {
+          try {
+            const jsonData = JSON.stringify(error.response.data);
+            // Avoid overly generic stringified empty objects or overly long ones
+            if (jsonData !== "{}" && jsonData.length < 200) {
+              specificErrorMessage = jsonData;
+            }
+          } catch (e) {
+            /* Ignore stringify error, default message will be used */
+          }
+        }
+      } else if (error.message) {
+        // Case 4: No error.response (network error, etc.), use error.message
+        specificErrorMessage = error.message;
+      }
+
+      console.log(
+        "[authSlice changePassword thunk] Rejecting with value:",
+        specificErrorMessage
+      );
+      return rejectWithValue(specificErrorMessage);
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -327,6 +370,16 @@ const authSlice = createSlice({
           "[authSlice updateProfilePicture.rejected] Profile picture update failed:",
           action.payload
         );
+      })
+      .addCase(changePassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(changePassword.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(changePassword.rejected, (state, action) => {
+        state.loading = false;
       });
   },
 });

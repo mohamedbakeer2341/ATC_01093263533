@@ -6,8 +6,6 @@
 .idea/
 .vscode/
 .env
-.env.local
-*.env*.local
 
 # System files
 Thumbs.db
