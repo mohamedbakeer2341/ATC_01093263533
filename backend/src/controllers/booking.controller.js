@@ -84,7 +84,7 @@ export const getUserBookings = asyncHandler(async (req, res, next) => {
       limit,
       populate: {
         path: "eventId",
-        select: "name date venue price image",
+        select: "name date venue price image category",
         options: { lean: true },
       },
       sort: { bookedAt: -1 },
@@ -103,9 +103,12 @@ export const getUserBookings = asyncHandler(async (req, res, next) => {
       eventVenue: booking.eventId.venue,
       eventPrice: booking.eventId.price,
       eventImage: booking.eventId.image,
+      eventCategory: booking.eventId.category,
     }));
 
-  res.status(200).json({ success: true, count: result.length, data: result });
+  res
+    .status(200)
+    .json({ success: true, count: result.length, data: result, pagination });
 });
 
 export const deleteBooking = asyncHandler(async (req, res, next) => {
