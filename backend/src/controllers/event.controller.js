@@ -120,6 +120,7 @@ export const updateEvent = asyncHandler(async (req, res, next) => {
   }
 
   const existingEvent = await Event.findOne({
+    _id: { $ne: req.params.id },
     name,
     date: new Date(date),
     venue,
