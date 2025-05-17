@@ -150,20 +150,28 @@ export const uploadProfilePicture = async (req, res, next) => {
     user.profilePicture.includes("cloudinary.com") &&
     user.profilePicture.includes("/upload/")
   ) {
-    const parts = user.profilePicture.split("/upload/");
-    if (parts.length > 1) {
-      const versionAndPublicId = parts[1];
-      const pathParts = versionAndPublicId.split("/");
-      let oldPublicId;
-      if (pathParts[0].match(/^v\d+$/)) {
-        oldPublicId = pathParts.slice(1).join("/").split(".")[0];
-      } else {
-        oldPublicId = versionAndPublicId.split(".")[0];
-      }
+    try {
+      const parts = user.profilePicture.split("/upload/");
+      if (parts.length > 1 && parts[1]) {
+        const versionAndPublicId = parts[1];
+        const pathParts = versionAndPublicId.split("/");
+        let oldPublicId;
+        if (pathParts[0].match(/^v\d+$/)) {
+          oldPublicId = pathParts.slice(1).join("/").split(".")[0];
+        } else {
+          oldPublicId = versionAndPublicId.split(".")[0];
+        }
 
-      if (oldPublicId) {
-        await cloudinary.uploader.destroy(oldPublicId);
+        if (oldPublicId) {
+          await cloudinary.uploader.destroy(oldPublicId);
+        }
       }
+    } catch (e) {
+      const error = new Error(
+        "Error trying to delete old profile picture from Cloudinary (non-fatal):"
+      );
+      error.status = 500;
+      return next(error);
     }
   }
 
