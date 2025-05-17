@@ -143,12 +143,28 @@ export const uploadProfilePicture = async (req, res, next) => {
     error.status = 400;
     return next(error);
   }
-  console.log(user.profilePicture);
-  if (user.profilePicture) {
-    const urlParts = user.profilePicture.split("/upload/")[1].split("/");
-    const oldPublicId = urlParts.slice(1).join("/").split(".")[0];
 
-    await cloudinary.uploader.destroy(oldPublicId);
+  if (
+    user.profilePicture &&
+    typeof user.profilePicture === "string" &&
+    user.profilePicture.includes("cloudinary.com") &&
+    user.profilePicture.includes("/upload/")
+  ) {
+    const parts = user.profilePicture.split("/upload/");
+    if (parts.length > 1) {
+      const versionAndPublicId = parts[1];
+      const pathParts = versionAndPublicId.split("/");
+      let oldPublicId;
+      if (pathParts[0].match(/^v\d+$/)) {
+        oldPublicId = pathParts.slice(1).join("/").split(".")[0];
+      } else {
+        oldPublicId = versionAndPublicId.split(".")[0];
+      }
+
+      if (oldPublicId) {
+        await cloudinary.uploader.destroy(oldPublicId);
+      }
+    }
   }
 
   user.profilePicture = req.file.path;
