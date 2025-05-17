@@ -4,6 +4,7 @@ import { hashPassword, comparePassword } from "../utils/password.js";
 import { generateToken as generateCryptoToken } from "../utils/crypto.js";
 import { sendVerificationEmail } from "../utils/email.js";
 import cloudinary from "../utils/cloudinary.js";
+import redisClient from "../utils/redis.js";
 
 export const createAdmin = async (req, res, next) => {
   const { email, password, name } = req.body;
