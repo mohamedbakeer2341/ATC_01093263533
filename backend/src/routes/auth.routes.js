@@ -96,15 +96,45 @@ router.post("/signup", validate(signupValidation), asyncHandler(signup));
  *                 example: "Password123!"
  *     responses:
  *       200:
- *         description: Returns a JWT token
+ *         description: Returns a JWT token and user object
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Login successful
  *                 token:
  *                   type: string
  *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: "60c72b9f9b1e8b001f8e4b1e"
+ *                     name:
+ *                       type: string
+ *                       example: "John Doe"
+ *                     email:
+ *                       type: string
+ *                       format: email
+ *                       example: "user@example.com"
+ *                     role:
+ *                       type: string
+ *                       enum: [user, admin]
+ *                       example: "user"
+ *                     isVerified:
+ *                       type: boolean
+ *                       example: true
+ *                     profilePicture:
+ *                       type: string
+ *                       format: url
+ *                       example: "https://res.cloudinary.com/demo/image/upload/sample.jpg"
  *       401:
  *         description: Invalid credentials
  *       500:
@@ -183,6 +213,71 @@ router.post(
   asyncHandler(createAdmin)
 );
 
+/**
+ * @swagger
+ * /auth/upload-profile-picture:
+ *   patch:
+ *     summary: Upload or update user's profile picture
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - profilePicture
+ *             properties:
+ *               profilePicture:
+ *                 type: string
+ *                 format: binary
+ *                 description: The profile picture image file to upload.
+ *     responses:
+ *       200:
+ *         description: Profile picture uploaded successfully, returns updated user profile data.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: "60c72b9f9b1e8b001f8e4b1e"
+ *                     name:
+ *                       type: string
+ *                       example: "John Doe"
+ *                     email:
+ *                       type: string
+ *                       format: email
+ *                       example: "user@example.com"
+ *                     role:
+ *                       type: string
+ *                       enum: [user, admin]
+ *                       example: "user"
+ *                     isVerified:
+ *                       type: boolean
+ *                       example: true
+ *                     profilePicture:
+ *                       type: string
+ *                       format: url
+ *                       example: "https://res.cloudinary.com/yourcloud/image/upload/v12345/folder/imagefile.jpg"
+ *       400:
+ *         description: No file uploaded or invalid file type.
+ *       401:
+ *         description: Unauthorized (missing/invalid token).
+ *       404:
+ *         description: User not found.
+ *       500:
+ *         description: Internal server error.
+ */
 router.patch(
   "/upload-profile-picture",
   authenticate,
@@ -250,12 +345,33 @@ router.patch(
  *             schema:
  *               type: object
  *               properties:
- *                 name:
- *                   type: string
- *                 email:
- *                   type: string
- *                 role:
- *                   type: string
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     _id:
+ *                       type: string
+ *                       example: "60c72b9f9b1e8b001f8e4b1e"
+ *                     name:
+ *                       type: string
+ *                       example: "John Doe"
+ *                     email:
+ *                       type: string
+ *                       format: email
+ *                       example: "user@example.com"
+ *                     role:
+ *                       type: string
+ *                       enum: [user, admin]
+ *                       example: "user"
+ *                     isVerified:
+ *                       type: boolean
+ *                       example: true
+ *                     profilePicture:
+ *                       type: string
+ *                       format: url
+ *                       example: "https://res.cloudinary.com/demo/image/upload/sample.jpg"
  *       401:
  *         description: Unauthorized (missing/invalid token)
  *       500:

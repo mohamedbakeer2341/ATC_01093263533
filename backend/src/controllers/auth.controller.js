@@ -111,7 +111,19 @@ export const login = async (req, res, next) => {
     email: user.email,
     role: user.role,
   });
-  res.status(200).json({ success: true, message: "Login successful", token });
+  res.status(200).json({
+    success: true,
+    message: "Login successful",
+    token,
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      isVerified: user.isVerified,
+      profilePicture: user.profilePicture,
+    },
+  });
 };
 
 export const uploadProfilePicture = async (req, res, next) => {
@@ -140,10 +152,15 @@ export const uploadProfilePicture = async (req, res, next) => {
   user.profilePicture = req.file.path;
   await user.save();
 
-  res.status(200).json({
-    message: "Profile picture uploaded successfully",
-    data: { profilePicture: user.profilePicture },
-  });
+  const profileData = {
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    isVerified: user.isVerified,
+    profilePicture: user.profilePicture,
+  };
+  return res.json({ success: true, data: profileData });
 };
 
 export const changePassword = async (req, res, next) => {
@@ -183,6 +200,7 @@ export const getUserProfile = async (req, res, next) => {
     _id: user._id,
     name: user.name,
     email: user.email,
+    role: user.role,
     isVerified: user.isVerified,
     profilePicture: user.profilePicture,
   };
