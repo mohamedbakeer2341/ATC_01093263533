@@ -4,7 +4,7 @@ import { hashPassword, comparePassword } from "../utils/password.js";
 import { generateToken as generateCryptoToken } from "../utils/crypto.js";
 import { sendVerificationEmail } from "../utils/email.js";
 import cloudinary from "../utils/cloudinary.js";
-import redisClient from "../utils/redis.js";
+// import redisClient from "../utils/redis.js";
 
 export const createAdmin = async (req, res, next) => {
   const { email, password, name } = req.body;
@@ -166,12 +166,12 @@ export const changePassword = async (req, res, next) => {
 
 export const getUserProfile = async (req, res, next) => {
   const { userId } = req.user;
-  const cacheKey = `user_profile_${userId}`;
+  // const cacheKey = `user_profile_${userId}`;
 
-  const cachedProfile = await redisClient.get(cacheKey);
-  if (cachedProfile) {
-    return res.json({ success: true, data: JSON.parse(cachedProfile) });
-  }
+  // const cachedProfile = await redisClient.get(cacheKey);
+  // if (cachedProfile) {
+  //   return res.json({ success: true, data: JSON.parse(cachedProfile) });
+  // }
 
   const user = await User.findById(userId).lean();
 
@@ -186,6 +186,6 @@ export const getUserProfile = async (req, res, next) => {
     isVerified: user.isVerified,
     profilePicture: user.profilePicture,
   };
-  await redisClient.setEx(cacheKey, 1800, JSON.stringify(profileData));
+  // await redisClient.setEx(cacheKey, 1800, JSON.stringify(profileData));
   return res.json({ success: true, data: profileData });
 };
