@@ -148,6 +148,13 @@ cd EventBooker
 - **Deployed Application:** `https://event-booker-frontend.vercel.app/`
   _(Note: The deployed frontend application is configured to connect to the deployed backend API: `https://eventbooker-024e32ba58a3.herokuapp.com/api`)_
 
+6.4.1. Admin Demo Credentials
+For testing admin features, you can use the following demo credentials:
+
+Email: admin@areeb.com
+
+Password: mmmm123321
+
 ### 6.5. Running with Docker Compose
 
 These instructions assume you have Docker and Docker Compose installed on your system. This Docker Compose setup is designed for local development, creating a self-contained environment where the frontend (typically on `http://localhost:3000`) communicates with the backend (typically on `http://localhost:5000/api`) running in separate containers on your local machine.
